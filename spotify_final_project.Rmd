@@ -17,13 +17,26 @@ head(spotify)
 print(paste("Missing values in the dataset:", sum(is.na(spotify))))
 colnames(spotify)
 ```
+
+
 Exploratory Data Analysis:
 
 
 ```{r}
+library(caret)
 #correlation matrix
 correlation_matrix <- cor(spotify[c("Popularity", "Danceability", "Energy", "Loudness..dB.", "Liveness", "Valence", "Acousticness", "Speechiness")])
 print(correlation_matrix)
+#list of highly correlated variables
+highly_correlated <- findCorrelation(correlation_matrix, cutoff = 0.5)
+highly_correlated
+print("Highly correlated variables:")
+for (index in highly_correlated) {
+  print(paste("Index:", index, " - Variable:", colnames(correlation_matrix)[index]))
+}
+```
+
+```{r}
 ```
 
 ```{r}
