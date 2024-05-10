@@ -1,0 +1,49 @@
+---
+title: "Simple Multiple Regression"
+output: html_document
+date: "`r Sys.Date()`"
+---
+
+```{r warning=FALSE, message=FALSE}
+#initial setup
+library(tidyverse)
+library(GGally)
+
+setwd("/Users/home/Downloads/5. Github Public Repos/Spotify Analysis (Stats 2 Project)")
+spotify <- read_csv("data/Spotify-2000.csv")
+```
+
+```{r}
+#select the needed data & rename some columns
+spotify_smlr <- spotify %>%
+  select(Popularity, Acousticness, Speechiness, `Length (Duration)`,
+         Valence, Liveness, `Loudness (dB)`, Energy,
+         `Beats Per Minute (BPM)`, `Top Genre`) %>%
+  rename(Loudness = `Loudness (dB)`,
+         BPM = `Beats Per Minute (BPM)`,
+         Length = `Length (Duration)`,
+         Genre = `Top Genre`)
+```
+
+```{r fig.width=8, fig.height=8}
+#1 SMLR Accousticness
+#checking for collinearity of quantitative variables
+ggcorr(data = spotify_smlr %>% select(-Genre, -Acousticness),
+       label = TRUE, label_round = 2, label_size = 6,
+       size = 6, hjust = 0.75,
+       layout.exp = 1)
+
+#lm without genre
+acoustic_lm <- lm(Acousticness ~ Popularity + Speechiness + Length + Valence + Liveness + Loudness + BPM,
+                  data = spotify_smlr)
+summary(acoustic_lm)
+
+```
+
+
+```{r}
+#2 SMLR Popularity
+```
+
+
+
