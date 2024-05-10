@@ -26,63 +26,54 @@ spotify_smlr <- spotify %>%
          Genre = `Top Genre`)
 ```
 
-## Acousticness
+## Popularity
 ### collinearity check
 ```{r fig.width=8, fig.height=8}
 #1 SMLR Accousticness
-#checking for collinearity of quantitative variables
-ggcorr(data = spotify_smlr %>% select(-Genre, -Acousticness),
+#checking for collinearity of quantitative variables (energy is not needed)
+ggcorr(data = spotify_smlr %>% select(-Genre, -Popularity),
        label = TRUE, label_round = 2, label_size = 6,
        size = 6, hjust = 0.75,
        layout.exp = 1)
 
 #lm without genre
-acoustic_lm <- lm(Acousticness ~ Popularity + Speechiness + Length + Valence + Liveness + Loudness + BPM,
+popular_lm <- lm(Popularity ~ Acousticness + Speechiness + Length + Valence + Liveness + Loudness + BPM,
                   data = spotify_smlr)
-summary(acoustic_lm)
+summary(popular_lm)
+```
+
+### multi-collinearity
+```{r}
+#checking for multi-collinearity(not present):
+vif(popular_lm) #vif should be <5 for all vars
 ```
 
 ### dropped insignificant
 
 ```{r}
-#Acousticness continued
+#Popularity continued
 #dropping insignifican ones
-acoustic_lm <- lm(Acousticness ~ Length + Valence + Loudness + BPM,
+popular_lm <- lm(Popularity ~ Speechiness + Valence + Liveness + Loudness,
                   data = spotify_smlr)
-summary(acoustic_lm)
+summary(popular_lm)
 ```
 
-### multi-collinearity
-```{r}
-#checking for multi-collinearity:
-vif(acoustic_lm) #vif should be <5 for all vars
-#var selection with AIC
-step(acoustic_lm) #looks like those vars are fine
-```
 
 ### genre
 ```{r}
 #Acousticness continued
 #adding Genre categorical variable
-acoustic_lm3 <- lm(Acousticness ~ Length + Valence + Loudness + BPM + Genre,
+popular_lm <- lm(Popularity ~ Speechiness + Valence + Liveness + Loudness + Genre,
                   data = spotify_smlr)
 
 #check if Genre is significant (incremental F-test)
-acoustic_full_lm <- lm(Acousticness ~ Length + Valence + Loudness + BPM + Genre,
+popular_full_lm <- lm(Popularity ~ Speechiness + Valence + Liveness + Loudness + Genre,
                   data = spotify_smlr)
 
-acoustic_null_lm <- lm(Acousticness ~ Length + Valence + Loudness + BPM,
+popular_null_lm <- lm(Popularity ~ Speechiness + Valence + Liveness + Loudness,
                   data = spotify_smlr)
 
-anova(acoustic_null_lm, acoustic_full_lm)
+anova(popular_null_lm, popular_full_lm)
 ```
 Okay, genre is significant, will keep it in the model.
-Final model vars: Length + Valence + Loudness + BPM + Genre
-
-
-```{r}
-#2 SMLR Popularity
-```
-
-
-
+Final model vars for Popularity: Speechiness + Valence + Liveness + Loudness + Genre
