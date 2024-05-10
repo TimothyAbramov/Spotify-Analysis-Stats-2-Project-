@@ -3,6 +3,15 @@ title: "Simple Multiple Regression"
 output: html_document
 date: "`r Sys.Date()`"
 ---
+```{r}
+#!!!Steps to show(by slides)
+#1. Corellation matrix for both Popularity and Danceability
+#2. Original models(with "1" at the end) outputs
+#3. VIF check + performance of "2" models (with insignif vars removed)
+#4. Adding Genre step, anova results for both
+#5. Final models + performance/fit of the model (RSE, R^2)
+#!!!
+```
 
 ```{r warning=FALSE, message=FALSE}
 #initial setup
