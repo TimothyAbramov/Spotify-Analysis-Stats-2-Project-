@@ -27,9 +27,10 @@ spotify_smlr <- spotify %>%
 ```
 
 ## Popularity
+
 ### collinearity check
+
 ```{r fig.width=8, fig.height=8}
-#1 SMLR Accousticness
 #checking for collinearity of quantitative variables (drop valence and energy)
 ggcorr(data = spotify_smlr %>% select(-Genre, -Popularity),
        label = TRUE, label_round = 2, label_size = 6,
@@ -37,33 +38,34 @@ ggcorr(data = spotify_smlr %>% select(-Genre, -Popularity),
        layout.exp = 1)
 
 #lm without genre
-popular_lm <- lm(Popularity ~ Acousticness + Speechiness + Length + Valence + Liveness + Loudness + BPM + Danceability,
+popular_lm1 <- lm(Popularity ~ Acousticness + Speechiness + Length + Valence + Liveness + Loudness + BPM + Danceability + Energy,
                   data = spotify_smlr)
-summary(popular_lm)
+summary(popular_lm1)
 ```
 
 ### multi-collinearity
+
 ```{r}
 #checking for multi-collinearity(not present):
-vif(popular_lm) #vif should be <5 for all vars
+vif(popular_lm1) #vif should be <5 for all vars
 ```
 
 ### dropped insignificant
 
 ```{r}
 #Popularity continued
-#dropping insignifican ones
-popular_lm <- lm(Popularity ~ Speechiness + Liveness + Loudness + Danceability,
+#dropping insignifican ones(energy)
+popular_lm2 <- lm(Popularity ~ Speechiness + Liveness + Loudness + Danceability,
                   data = spotify_smlr)
-summary(popular_lm)
+summary(popular_lm2)
 ```
 
-
 ### genre
+
 ```{r}
-#Acousticness continued
+#Popularity continued
 #adding Genre categorical variable
-popular_lm <- lm(Popularity ~ Speechiness + Liveness + Loudness + Danceability + Genre,
+popular_lm3 <- lm(Popularity ~ Speechiness + Liveness + Loudness + Danceability + Genre,
                   data = spotify_smlr)
 
 #check if Genre is significant (incremental F-test)
@@ -75,29 +77,72 @@ popular_null_lm <- lm(Popularity ~ Speechiness + Liveness + Loudness + Danceabil
 
 anova(popular_null_lm, popular_full_lm)
 ```
-Okay, genre is significant, will keep it in the model.
-Final model vars for Popularity: Speechiness + Liveness + Loudness + Danceability + Genre
+
+Okay, genre is significant, will keep it in the model. Final model vars for Popularity: Speechiness + Liveness + Loudness + Danceability + Genre
+
+```{r}
+#final model
+summary(popular_lm3)
+```
+
 !!!Also, I haven't done any interactions for this model, might wanna try do one with interactions and see if it improves anything.
 
-
 ## Danceability
+
 ### collinearity check
+
 ```{r fig.width=8, fig.height=8}
-#1 SMLR Accousticness
-#checking for collinearity of quantitative variables (energy is not needed)
+#checking for collinearity of quantitative variables (drop energy + acousticness)
 ggcorr(data = spotify_smlr %>% select(-Genre, -Danceability),
        label = TRUE, label_round = 2, label_size = 6,
        size = 6, hjust = 0.75,
        layout.exp = 1)
 
 #lm without genre
-dance_lm <- lm(Danceability ~ Popularity + Acousticness + Speechiness + Length + Valence + Liveness + Loudness + BPM,
+dance_lm1 <- lm(Danceability ~ Popularity + Speechiness + Length + Valence + Liveness + Loudness + BPM + Energy,
                   data = spotify_smlr)
-summary(dance_lm)
+summary(dance_lm1)
 ```
 
 ### vif
-```{r}
 
+```{r}
+#checking for multiple-collinearity
+vif(dance_lm1)
 ```
 
+### drop insignif
+
+```{r}
+#dropped length and loudness and energy
+dance_lm2 <- lm(Danceability ~ Popularity + Speechiness + Valence + Liveness + BPM,
+                  data = spotify_smlr)
+summary(dance_lm2)
+```
+
+### genre
+
+```{r}
+#Danceability continued
+#adding Genre categorical variable
+dance_lm3 <- lm(Danceability ~ Popularity + Speechiness + Valence + Liveness + BPM + Genre,
+                  data = spotify_smlr)
+
+#check if Genre is significant (incremental F-test)
+dance_full_lm <- lm(Danceability ~ Popularity + Speechiness + Valence + Liveness + BPM + Genre,
+                  data = spotify_smlr)
+
+
+dance_null_lm <- lm(Danceability ~ Popularity + Speechiness + Valence + Liveness + BPM,
+                  data = spotify_smlr)
+
+
+anova(dance_null_lm, dance_full_lm)
+```
+
+Genre is significant for this model as well. Final list of vars used in the final model: Popularity + Speechiness + Valence + Liveness + BPM + Genre
+
+```{r}
+#final Danceability model
+summary(dance_lm3)
+```
