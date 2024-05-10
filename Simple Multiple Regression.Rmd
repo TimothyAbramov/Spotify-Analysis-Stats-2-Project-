@@ -19,7 +19,7 @@ spotify <- read_csv("data/Spotify-2000.csv")
 spotify_smlr <- spotify %>%
   select(Popularity, Acousticness, Speechiness, `Length (Duration)`,
          Valence, Liveness, `Loudness (dB)`, Energy,
-         `Beats Per Minute (BPM)`, `Top Genre`) %>%
+         `Beats Per Minute (BPM)`, `Top Genre`, Danceability) %>%
   rename(Loudness = `Loudness (dB)`,
          BPM = `Beats Per Minute (BPM)`,
          Length = `Length (Duration)`,
@@ -30,14 +30,14 @@ spotify_smlr <- spotify %>%
 ### collinearity check
 ```{r fig.width=8, fig.height=8}
 #1 SMLR Accousticness
-#checking for collinearity of quantitative variables (energy is not needed)
+#checking for collinearity of quantitative variables (drop valence and energy)
 ggcorr(data = spotify_smlr %>% select(-Genre, -Popularity),
        label = TRUE, label_round = 2, label_size = 6,
        size = 6, hjust = 0.75,
        layout.exp = 1)
 
 #lm without genre
-popular_lm <- lm(Popularity ~ Acousticness + Speechiness + Length + Valence + Liveness + Loudness + BPM,
+popular_lm <- lm(Popularity ~ Acousticness + Speechiness + Length + Valence + Liveness + Loudness + BPM + Danceability,
                   data = spotify_smlr)
 summary(popular_lm)
 ```
@@ -53,7 +53,7 @@ vif(popular_lm) #vif should be <5 for all vars
 ```{r}
 #Popularity continued
 #dropping insignifican ones
-popular_lm <- lm(Popularity ~ Speechiness + Valence + Liveness + Loudness,
+popular_lm <- lm(Popularity ~ Speechiness + Liveness + Loudness + Danceability,
                   data = spotify_smlr)
 summary(popular_lm)
 ```
@@ -63,17 +63,41 @@ summary(popular_lm)
 ```{r}
 #Acousticness continued
 #adding Genre categorical variable
-popular_lm <- lm(Popularity ~ Speechiness + Valence + Liveness + Loudness + Genre,
+popular_lm <- lm(Popularity ~ Speechiness + Liveness + Loudness + Danceability + Genre,
                   data = spotify_smlr)
 
 #check if Genre is significant (incremental F-test)
-popular_full_lm <- lm(Popularity ~ Speechiness + Valence + Liveness + Loudness + Genre,
+popular_full_lm <- lm(Popularity ~ Speechiness + Liveness + Loudness + Danceability + Genre,
                   data = spotify_smlr)
 
-popular_null_lm <- lm(Popularity ~ Speechiness + Valence + Liveness + Loudness,
+popular_null_lm <- lm(Popularity ~ Speechiness + Liveness + Loudness + Danceability,
                   data = spotify_smlr)
 
 anova(popular_null_lm, popular_full_lm)
 ```
 Okay, genre is significant, will keep it in the model.
-Final model vars for Popularity: Speechiness + Valence + Liveness + Loudness + Genre
+Final model vars for Popularity: Speechiness + Liveness + Loudness + Danceability + Genre
+!!!Also, I haven't done any interactions for this model, might wanna try do one with interactions and see if it improves anything.
+
+
+## Danceability
+### collinearity check
+```{r fig.width=8, fig.height=8}
+#1 SMLR Accousticness
+#checking for collinearity of quantitative variables (energy is not needed)
+ggcorr(data = spotify_smlr %>% select(-Genre, -Danceability),
+       label = TRUE, label_round = 2, label_size = 6,
+       size = 6, hjust = 0.75,
+       layout.exp = 1)
+
+#lm without genre
+dance_lm <- lm(Danceability ~ Popularity + Acousticness + Speechiness + Length + Valence + Liveness + Loudness + BPM,
+                  data = spotify_smlr)
+summary(dance_lm)
+```
+
+### vif
+```{r}
+
+```
+
