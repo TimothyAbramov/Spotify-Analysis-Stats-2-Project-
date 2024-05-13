@@ -3,15 +3,6 @@ title: "Simple Multiple Regression"
 output: html_document
 date: "`r Sys.Date()`"
 ---
-```{r}
-#!!!Steps to show(by slides)
-#1. Corellation matrix for both Popularity and Danceability
-#2. Original models(with "1" at the end) outputs
-#3. VIF check + performance of "2" models (with insignif vars removed)
-#4. Adding Genre step, anova results for both
-#5. Final models + performance/fit of the model (RSE, R^2)
-#!!!
-```
 
 ```{r warning=FALSE, message=FALSE}
 #initial setup
@@ -43,6 +34,7 @@ spotify_smlr <- spotify_smlr %>%
     grepl("hip hop", Genre, ignore.case = TRUE) ~ "Hip Hop",
     TRUE ~ "Other"
   ))
+
 spotify_smlr <- spotify_smlr %>%
   mutate(danceCat = case_when(
     Danceability >=50 ~ 1,
@@ -66,125 +58,65 @@ print(chi_squared_result)
 ```
 
 
-```{r}
 
-## Popularity
 
-### collinearity check
-
+## Popularity lm
+### original lm
 ```{r fig.width=8, fig.height=8}
-#checking for collinearity of quantitative variables (drop valence and energy)
-ggcorr(data = spotify_smlr %>% select(-Genre, -Popularity),
+#checking for collinearity of all variables
+ggcorr(data = spotify_smlr %>% select(-Genre, -danceCat),
        label = TRUE, label_round = 2, label_size = 6,
        size = 6, hjust = 0.75,
        layout.exp = 1)
 
-#lm without genre
-popular_lm1 <- lm(Popularity ~ Acousticness + Speechiness + Length + Valence + Liveness + Loudness + BPM + Danceability + Energy,
+#lm with all vars
+popular_lm1 <- lm(Popularity ~ Acousticness + Speechiness + Length + Valence + Liveness + Loudness + BPM + Danceability + Energy + Genre,
                   data = spotify_smlr)
 summary(popular_lm1)
 ```
 
-### multi-collinearity
+### VIF
 
 ```{r}
 #checking for multi-collinearity(not present):
 vif(popular_lm1) #vif should be <5 for all vars
 ```
 
-### dropped insignificant
+### Stepwise selection via AIC
 
 ```{r}
-#Popularity continued
-#dropping insignifican ones(energy)
-popular_lm2 <- lm(Popularity ~ Speechiness + Liveness + Loudness + Danceability,
-                  data = spotify_smlr)
+popular_lm2 <- step(popular_lm1, trace = FALSE) #change trace to see Stepwise steps
 summary(popular_lm2)
 ```
 
-### genre
-
-```{r}
-#Popularity continued
-#adding Genre categorical variable
-popular_lm3 <- lm(Popularity ~ Speechiness + Liveness + Loudness + Danceability + Genre,
-                  data = spotify_smlr)
-
-#check if Genre is significant (incremental F-test)
-popular_full_lm <- lm(Popularity ~ Speechiness + Liveness + Loudness + Danceability + Genre,
-                  data = spotify_smlr)
-
-popular_null_lm <- lm(Popularity ~ Speechiness + Liveness + Loudness + Danceability,
-                  data = spotify_smlr)
-
-anova(popular_null_lm, popular_full_lm)
-```
-
-Okay, genre is significant, will keep it in the model. Final model vars for Popularity: Speechiness + Liveness + Loudness + Danceability + Genre
-
-```{r}
-#final model
-summary(popular_lm3)
-```
-
-!!!Also, I haven't done any interactions for this model, might wanna try do one with interactions and see if it improves anything.
 
 ## Danceability
-
-### collinearity check
+### original lm
 
 ```{r fig.width=8, fig.height=8}
-#checking for collinearity of quantitative variables (drop energy + acousticness)
-ggcorr(data = spotify_smlr %>% select(-Genre, -Danceability),
+#checking for collinearity of all quantitative vars
+ggcorr(data = spotify_smlr %>% select(-Genre, -danceCat),
        label = TRUE, label_round = 2, label_size = 6,
        size = 6, hjust = 0.75,
        layout.exp = 1)
 
-#lm without genre
-dance_lm1 <- lm(Danceability ~ Popularity + Speechiness + Length + Valence + Liveness + Loudness + BPM + Energy,
+#lm with all except Popularity
+dance_lm1 <- lm(Danceability ~ Acousticness + Speechiness + Length + Valence + Liveness + Loudness + BPM + Energy + Genre,
                   data = spotify_smlr)
 summary(dance_lm1)
 ```
 
-### vif
+### VIF
 
 ```{r}
 #checking for multiple-collinearity
 vif(dance_lm1)
 ```
 
-### drop insignif
+### Stepwise selection via AIC
 
 ```{r}
-#dropped length and loudness and energy
-dance_lm2 <- lm(Danceability ~ Popularity + Speechiness + Valence + Liveness + BPM,
-                  data = spotify_smlr)
+#finding optimal model
+dance_lm2 <- step(dance_lm1, trace = FALSE) #change trace to true to see Stepwise
 summary(dance_lm2)
-```
-
-### genre
-
-```{r}
-#Danceability continued
-#adding Genre categorical variable
-dance_lm3 <- lm(Danceability ~ Popularity + Speechiness + Valence + Liveness + BPM + Genre,
-                  data = spotify_smlr)
-
-#check if Genre is significant (incremental F-test)
-dance_full_lm <- lm(Danceability ~ Popularity + Speechiness + Valence + Liveness + BPM + Genre,
-                  data = spotify_smlr)
-
-
-dance_null_lm <- lm(Danceability ~ Popularity + Speechiness + Valence + Liveness + BPM,
-                  data = spotify_smlr)
-
-
-anova(dance_null_lm, dance_full_lm)
-```
-
-Genre is significant for this model as well. Final list of vars used in the final model: Popularity + Speechiness + Valence + Liveness + BPM + Genre
-
-```{r}
-#final Danceability model
-summary(dance_lm3)
 ```
