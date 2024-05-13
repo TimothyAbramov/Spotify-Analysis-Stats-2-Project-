@@ -19,7 +19,7 @@ library(tidyverse)
 library(GGally)
 library(car)
 
-setwd("/Users/home/Downloads/5. Github Public Repos/Spotify Analysis (Stats 2 Project)")
+#setwd("/Users/home/Downloads/5. Github Public Repos/Spotify Analysis (Stats 2 Project)")
 spotify <- read_csv("data/Spotify-2000.csv")
 ```
 
@@ -33,7 +33,40 @@ spotify_smlr <- spotify %>%
          BPM = `Beats Per Minute (BPM)`,
          Length = `Length (Duration)`,
          Genre = `Top Genre`)
+
+spotify_smlr <- spotify_smlr %>%
+  mutate(Genre = case_when(
+    grepl("rock", Genre, ignore.case = TRUE) ~ "Rock",
+    grepl("pop", Genre, ignore.case = TRUE) ~ "Pop",
+    grepl("soul", Genre, ignore.case = TRUE) ~ "Soul",
+    grepl("blues", Genre, ignore.case = TRUE) ~ "Blues",
+    grepl("hip hop", Genre, ignore.case = TRUE) ~ "Hip Hop",
+    TRUE ~ "Other"
+  ))
+spotify_smlr <- spotify_smlr %>%
+  mutate(danceCat = case_when(
+    Danceability >=50 ~ 1,
+    Danceability <50 ~ 0
+  ))
 ```
+
+## Chi squared: Danceability & Genre
+
+```{r, warning=FALSE}
+table_genre_dance <- table(spotify_smlr$Genre, spotify_smlr$danceCat)
+
+# Print the contingency table to see the counts
+print(table_genre_dance)
+
+# Run the chi-squared test
+chi_squared_result <- chisq.test(table_genre_dance)
+
+# Print the result of the chi-squared test
+print(chi_squared_result)
+```
+
+
+```{r}
 
 ## Popularity
 

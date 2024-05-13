@@ -29,15 +29,10 @@ correlation_matrix <- cor(spotify[c("Popularity", "Danceability", "Energy", "Lou
 print(correlation_matrix)
 #list of highly correlated variables
 highly_correlated <- findCorrelation(correlation_matrix, cutoff = 0.5)
-highly_correlated
-print("Highly correlated variables:")
-for (index in highly_correlated) {
-  print(paste("Index:", index, " - Variable:", colnames(correlation_matrix)[index]))
-}
+
 ```
 
-```{r}
-```
+
 
 ```{r}
 #scatter plot b/w Popularity and Danceability
