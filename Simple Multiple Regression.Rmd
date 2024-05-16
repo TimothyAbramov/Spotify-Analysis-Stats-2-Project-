@@ -10,7 +10,7 @@ library(tidyverse)
 library(GGally)
 library(car)
 
-#setwd("/Users/home/Downloads/5. Github Public Repos/Spotify Analysis (Stats 2 Project)")
+setwd("/Users/home/Downloads/5. Github Public Repos/Spotify Analysis (Stats 2 Project)")
 spotify <- read_csv("data/Spotify-2000.csv")
 ```
 
@@ -85,7 +85,7 @@ vif(popular_lm1) #vif should be <5 for all vars
 ### Stepwise selection via AIC
 
 ```{r}
-popular_lm2 <- step(popular_lm1, trace = FALSE) #change trace to see Stepwise steps
+popular_lm2 <- step(popular_lm1, trace = TRUE) #change trace to see Stepwise steps
 summary(popular_lm2)
 ```
 
@@ -117,6 +117,6 @@ vif(dance_lm1)
 
 ```{r}
 #finding optimal model
-dance_lm2 <- step(dance_lm1, trace = FALSE) #change trace to true to see Stepwise
-summary(dance_lm2)
+dance_lm2 <- step(dance_lm1, trace = TRUE) #change trace to true to see Stepwise
+#summary(dance_lm2)
 ```
